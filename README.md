@@ -5,6 +5,7 @@ This repository provides the implementation framework associated with the paper:
 
 **Seeing Through the Noise: A Cross-Modal Guided Framework for Hyperspectral Image Classification under Multi-Type Degradations**
 
+<img width="2022" height="1297" alt="CMFPG" src="https://github.com/user-attachments/assets/66e1f278-ea06-48ac-b2d4-fc3a5d108ac3" />
 
 #Acknowledgement
 
