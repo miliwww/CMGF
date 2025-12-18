@@ -41,9 +41,9 @@ EPOCH = 200
 LR = 0.0005
 #LR = 0.00025
 # dataset_name = "Houston"
-# dataset_name = "Trento"
+dataset_name = "Trento"
 # dataset_name = "MUUFL"
-dataset_name = "Augsburg"
+# dataset_name = "Augsburg"
 
 for run in range(1):
     print("+"*30,"run:",run,"+"*30)

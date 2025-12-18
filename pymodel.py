@@ -6,23 +6,6 @@ from torchsummary import summary
 import math
 
 
-class ECABlock(nn.Module):
-    def __init__(self, channels, gamma=2, b=1):
-        super(ECABlock, self).__init__()
-        kernel_size = int(abs((math.log(channels, 2) + b) / gamma))
-        kernel_size = kernel_size if kernel_size % 2 else kernel_size + 1
-        self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.max_pool = nn.AdaptiveMaxPool2d(1)
-        self.conv = nn.Conv1d(1, 1, kernel_size=kernel_size, padding=(kernel_size - 1) // 2, bias=False)
-        self.sigmoid = nn.Sigmoid()
-
-    def forward(self, x):
-        v = self.avg_pool(x)
-        v1= self.max_pool(x)
-        v = v+v1
-        v = self.conv(v.squeeze(-1).transpose(-1, -2)).transpose(-1, -2).unsqueeze(-1)
-        v = self.sigmoid(v)
-        return x * v
 
 
 class SpatialAttentionModule(nn.Module):
@@ -46,17 +29,6 @@ class SpatialAttentionModule(nn.Module):
 
         return out
 
-
-class EFR(nn.Module):
-    def __init__(self, channel):
-        super(EFR, self).__init__()
-        self.spatial_attention = SpatialAttentionModule()
-        self.eca = ECABlock(channel)
-
-    def forward(self, x):
-        out = self.eca(x)
-        out = self.spatial_attention(out) * out
-        return out
 
 
 class MixStyle(nn.Module):
@@ -277,30 +249,6 @@ def conv(in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1, 
     return nn.Conv2d(in_planes, out_planes, kernel_size=kernel_size, stride=stride,
                      padding=padding, dilation=dilation, groups=groups, bias=False)
 
-
-
-class PyConv(nn.Module):
-
-    def __init__(self, inplans, planes,  pyconv_kernels=[1, 3, 5], stride=1, pyconv_groups=[1, 4, 8]):
-        super(PyConv, self).__init__()
-        self.conv2_1 = conv(inplans, planes // 4, kernel_size=pyconv_kernels[0], padding=pyconv_kernels[0] // 2,
-                            stride=stride, groups=pyconv_groups[0])
-
-        self.conv2_2 = conv(inplans, planes // 4, kernel_size=pyconv_kernels[1], padding=pyconv_kernels[1] // 2,
-                            stride=stride, groups=pyconv_groups[1])
-        self.conv2_3 = conv(inplans, planes // 2, kernel_size=pyconv_kernels[2], padding=pyconv_kernels[2] // 2,
-                            stride=stride, groups=pyconv_groups[2])
-        self.channelspatialselayer1 = EFR(channel=64)
-        self.channelspatialselayer2 = EFR(channel=64)
-        self.channelspatialselayer3 = EFR(channel=128)
-    def forward(self, x):
-        x1 = self.conv2_1(x)
-        x2 = self.conv2_2(x)
-        x3 = self.conv2_3(x)
-        x1 = self.channelspatialselayer1(x1)
-        x2 = self.channelspatialselayer2(x2)
-        x3 = self.channelspatialselayer3(x3)
-        return torch.cat((x1,x2,x3), dim=1)
 
 
 
